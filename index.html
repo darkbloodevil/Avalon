@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body class="light-theme">
+    <datalist id="urls">
+        <option>ws://localhost:8765</option>
+    </datalist>
+
+    <h1>Avalon</h1>
+    <div id="start_scene" class="startbox">
+
+        <p><label for="url-text">Server: </label>
+            <input type="url" id="url_input" list="urls">
+        </p>
+        <p><label for="name-text">Name : </label>
+            <input type="text" id="name_input">
+        </p>
+        <p><label for="key-text">key : </label>
+            <input type="text" id="key_input" placeholder="key">
+        </p>
+
+        <p>
+            <button id="new_btn">New</button>
+            <button id="join_btn">Join</button>
+        </p>
+    </div>
+    <div id="waiting_room" class="waitingbox">
+        <p><label id="waiting_key_label">a</label></p>
+        <p><label id="waiting_uid_label">a</label></p>
+        <p><label>--- Room Members ---</label></p>
+        <ul id="waiting_room_member_list">
+
+        </ul>
+        <!-- <p><label>--- Chatting ---</label></p>
+        <ul id="waiting_chatting_list">
+            
+        </ul> -->
+        <p><button id="ready_btn">Ready</button>
+            <button id="start_btn">Start</button>
+        </p>
+    </div>
+    <div id="game_scene" class="gamescene">
+        <!-- <p><label id="game_key_label">a</label></p> -->
+        <p><label id="game_uid_label">a</label></p>
+        <p>
+            <label>Mission List</label>
+        <div id="game_missions" class="game_mission_div">
+            <label id="mission_label_1" class="unfinished_task"> 1</label>
+            <label id="mission_label_2" class="unfinished_task"> 1</label>
+            <label id="mission_label_3" class="unfinished_task"> 1</label>
+            <label id="mission_label_4" class="unfinished_task"> 1</label>
+            <label id="mission_label_5" class="unfinished_task"> 1</label>
+        </div>
+        </p>
+        <p>
+            <label id="game_state_label">a</label>
+        </p>
+
+        <p>
+        <div id="game_members" class="game_member_div">
+            <ol id="gaming_member_list">
+
+            </ol>
+        </div>
+        </p>
+        <p>
+            <button id="game_choose_teammate_button">Choose</button>
+            <button id="kill_button">KILL</button>
+        </p>
+        <p><div id="voting_box">
+            <button id="yes_button">YES</button>
+            <button id="no_button">NO</button>
+        </div></p>
+        <p>
+        <div id="game_messages" class="game_message_div">
+
+        </div>
+        </p>
+        <p><button id="identity_button">identity</button></p>
+
+    </div>
+
+    <script src="app.js"> </script>
+</body>
+
+</html>

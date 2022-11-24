@@ -1,0 +1,172 @@
+html {
+    font-size: 10px;
+    font-family: 'Noto Sans SC', sans-serif;
+    background-color: #00539F;
+}
+
+body {
+    width: 30em;
+    margin: 0 auto;
+    background-color: #FF9500;
+    padding: 0 20px 50px 20px;
+    border: 5px solid black;
+}
+
+h1 {
+    font-size: 48px;
+    text-align: center;
+    margin: 0;
+    padding: 20px 0;
+    color: #00539F;
+    text-shadow: 3px 3px 1px black;
+}
+
+input {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+label {
+    width: 200px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button {
+    margin: auto auto;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px 12px;
+}
+
+
+p,
+li {
+    font-size: 14px;
+    line-height: 2;
+    letter-spacing: 1px;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+}
+
+
+.startbox {
+    width: 25em;
+    margin: 0 auto;
+    border: 3px solid rgb(32, 13, 0);
+    padding: 8px 12px;
+    display: grid;
+    grid-template-rows: 70px 70px 80px 70px;
+}
+
+.waitingbox {
+    width: 25em;
+    margin: 0 auto;
+    border: 3px solid rgb(32, 13, 0);
+    padding: 8px 12px;
+}
+
+.waiting_yet::marker {
+    color: orangered;
+    font-size: 1.5em;
+}
+
+.waiting_ready::marker {
+    color: greenyellow;
+    font-size: 1.5em;
+}
+
+
+
+.game_mission_div {
+    border: 3px solid rgb(32, 13, 0);
+    display: grid;
+    grid-template-columns: 40px 40px 40px 40px 40px;
+}
+
+.game_mission_div label {
+    width: 40px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.game_mission_div .unfinished_task {
+    background-color: grey;
+    border: 2px dashed rgb(32, 13, 0);
+}
+
+.game_mission_div .failed_task {
+    background-color: black;
+    border: 2px dashed rgb(32, 13, 0);
+}
+
+.game_mission_div .successful_task {
+    background-color: red;
+    border: 2px dashed rgb(32, 13, 0);
+}
+
+.game_member_div {
+    height: 200px;
+    overflow-y: auto;
+}
+
+.team_leader label {
+    width: 200px;
+    font-size: 16px;
+    background-color: yellow;
+}
+
+.team_member label {
+    width: 200px;
+    font-size: 16px;
+    background-color: blanchedalmond;
+}
+
+.preteam_member label {
+    width: 200px;
+    font-size: 16px;
+    background-color: gold;
+}
+
+.assasin label {
+    width: 200px;
+    font-size: 16px;
+    background-color: plum;
+}
+
+.none label {
+    width: 200px;
+    font-size: 16px;
+}
+
+.unfinished_task::marker {
+    color: gray;
+    font-size: 1.5em;
+}
+
+.game_message_div {
+    height: 200px;
+    overflow-y: auto;
+
+    border: 3px solid rgb(32, 13, 0);
+    background-color: white;
+
+}
+.game_message_div li label{
+    width: 200px;
+    font-size: 14px;
+    background-color: white;
+}
+.game_message_div li label em{
+    color: green;
+  }
+
+.gamescene {
+    width: 25em;
+    margin: 0 auto;
+    border: 3px solid rgb(32, 13, 0);
+    padding: 8px 12px;
+}
