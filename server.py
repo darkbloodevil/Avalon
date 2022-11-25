@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import asyncio
+import datetime
 import json
 import secrets
 
@@ -11,6 +12,8 @@ from avalon import avalon
 JOIN = {}
 
 WATCH = {}
+
+MAX_SPARE_TIME = 1800
 
 
 async def error(websocket, message):
@@ -139,12 +142,56 @@ async def handler(websocket):
 
     """
     async for message in websocket:
+        delete_keys = []
+        for join_key in JOIN.keys():
+            game, connected = JOIN[join_key]
+            now_time = datetime.datetime.now()
+            time_spare = (now_time - game.last_action_time).seconds
+            if time_spare > MAX_SPARE_TIME:
+                event = {
+                    "type": "alert",
+                    "message": "time out !!! ",
+                    "join_key": join_key,
+                }
+                broadcast(json.dumps(event), event["join_key"])
+                delete_keys.append(join_key)
+                print("timeout ", time_spare, join_key, " these all connects ", JOIN.keys())
+        for join_key in delete_keys:
+            JOIN.pop(join_key)
+
         event = json.loads(message)
         # assert event["type"] == "init"
 
         if event["type"] == "join":
-            # Second player joins an existing game.
-            await join(websocket, event["join_key"], event["uid"])
+            game, _ = JOIN[event["join_key"]]
+            if not game.started:
+                await join(websocket, event["join_key"], event["uid"])
+            else:
+                if event["uid"] in game.players:
+                    print(event["uid"], " rejoin")
+                    uid = event["uid"]
+                    event = {
+                        "type": "rejoin",
+                        "player_role": game.player_roles,
+                        "play_turn": game.play_turn,
+                        "team_leader": game.team_leader,
+                        "player_list": game.players,
+                        "game_state": game.game_state,
+                        "veto": game.veto_count,
+                        "fail": game.fail_mission,
+                        "success": game.success_mission,
+                        "team": game.team_members,
+                        "pre_team": game.pre_team_members,
+                        "join_key": event["join_key"],
+                    }
+                    connected[uid] = websocket
+                    await websocket.send(json.dumps(event))
+                    event = {
+                        "type": "alert",
+                        "message": uid + " rejoin !!! ",
+                        "join_key": event["join_key"],
+                    }
+                    broadcast(json.dumps(event), event["join_key"])
         elif event["type"] == "watch":
             # Spectator watches an existing game.
             await watch(websocket, event["watch"])
@@ -164,7 +211,7 @@ async def handler(websocket):
             # print(game.players_ready)
         elif event["type"] == "start_game":
             game, _ = JOIN[event["join_key"]]
-            if game.start_able():
+            if game.start_able() and not game.started:
                 game.assign_role()
                 game.play()
 
@@ -229,6 +276,9 @@ async def handler(websocket):
                         game.game_state = 3
                     elif game.fail_mission == 3:
                         game.game_state = 4
+                        JOIN.pop(event["join_key"])
+                        print("game ", event["join_key"], " is over !")
+                        print(JOIN.keys(), " are still running")
                     else:
                         game.play_turn += 1
                         event = {
@@ -248,7 +298,7 @@ async def handler(websocket):
 
         elif event["type"] == "kill":
             game, _ = JOIN[event["join_key"]]
-            if game.game_state==3:
+            if game.game_state == 3:
                 event = {
                     "type": "murder",
                     "uid": event["uid"],
@@ -256,6 +306,9 @@ async def handler(websocket):
                 }
                 broadcast(json.dumps(event), event["join_key"])
                 game.game_state = 4
+                JOIN.pop(event["join_key"])
+                print("game ", event["join_key"], " is over !")
+                print(JOIN.keys(), " are still running")
 
 
 async def main():
@@ -265,3 +318,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+def on_close(ws, error):
+    print("error")

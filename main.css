@@ -155,14 +155,20 @@ img {
     background-color: white;
 
 }
-.game_message_div li label{
+
+.game_message_div li label {
     width: 200px;
     font-size: 14px;
     background-color: white;
 }
-.game_message_div li label em{
+
+.game_message_div li label em {
     color: green;
-  }
+}
+
+.game_message_div li .system em {
+    color: palevioletred;
+}
 
 .gamescene {
     width: 25em;

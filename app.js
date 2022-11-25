@@ -69,7 +69,7 @@ const identity_button = document.querySelector("#identity_button");
 const kill_button = document.querySelector("#kill_button");
 kill_button.style.display = "none";
 const game_state_label = document.querySelector('#game_state_label');
-const game_message_list=document.querySelector('#game_messages');
+const game_message_list = document.querySelector('#game_messages');
 
 const gamescene = document.querySelector('.gamescene');
 
@@ -247,7 +247,7 @@ identity_button.addEventListener("click", function () {
     let prompt = "";
     let bad_guy_all = "["
     game.player_list.forEach(e => {
-        if (game.player_role[e] > 3 && game.player_role[e] != 6) {
+        if (game.player_role[e] >= 3 && game.player_role[e] != 6) {
             bad_guy_all += e + ", ";
         }
     });
@@ -259,7 +259,7 @@ identity_button.addEventListener("click", function () {
         case 1:
             let bad_guy = "["
             game.player_list.forEach(e => {
-                if (game.player_role[e] > 4) {
+                if (game.player_role[e] >= 4) {
                     bad_guy += e + ", ";
                 }
             });
@@ -269,7 +269,7 @@ identity_button.addEventListener("click", function () {
         case 2:
             let Merlin = "["
             game.player_list.forEach(e => {
-                if (game.player_role[e] == 1 || game.player_role[e] == 3) {
+                if (game.player_role[e] == 1 || game.player_role[e] == 4) {
                     Merlin += e + ", ";
                 }
             });
@@ -298,90 +298,120 @@ identity_button.addEventListener("click", function () {
 
 function manage_message(event) {
     let data_json = JSON.parse(event.data);
-    switch (data_json.type) {
-        case "key":
-            game.join_key = data_json.join_key;
-            startbox.style.display = "none";
-            init_waiting_room();
-            break;
-        case "players":
-            game.player_list = data_json.player_list;
-            update_waiting_player_list();
-            break;
-        case "ready_list":
-            data_json.ready_list.forEach(element => {
-                game.player_ready_state[element] = true;
-            });
-            update_waiting_player_list();
-            break;
-        case "game_start":
-            send_message("Game start !","System");
-            send_message("I am the leader !",data_json.team_leader);
-            waitingbox.style.display = "none";
-            game.player_list = data_json.player_list;
-            game.player_role = data_json.player_role;
-            game.play_turn = data_json.play_turn;
-            game.team_leader = data_json.team_leader;
-            game.game_state = data_json.game_state;
-            game.missions = MISSION_LIST[game.player_list.length];
-            send_message("The mission needs "+game.missions[game.play_turn-1]+" to finish !","System");
-            init_player_state();
-            init_game_scene();
-            update_game();
-            break;
-        case "pre_team":
-            game.game_state = 1;
-            send_message("Do you agree the team ?",game.team_leader);
-            game.preteam = data_json.team_members;
-            update_game();
-            break;
-        case "vote_count":
-            send_message(data_json.count+" has voted.","System");
-            update_game();
-            break;
-        case "vote_result":
-            if (game.game_state == 2) {
-                deal_vote_mission(data_json.yes, data_json.no);
-            } else {
-                deal_vote_team(data_json.yes, data_json.no);
-            }
-            voting_finished();
-            update_game();
-            if (game.game_state != 2 && game.game_state != 3)
-                voting_finished();
-            break;
-        case "assign_leader":
-            game.team_leader = data_json.uid
-            if (data_json.reason == 0) {
-                game.veto_count++;
-                send_message("It'still turn "+game.play_turn+". I am the new leader ! "+(5-game.fail_count)+" more veto will result in gameover",data_json.team_leader);
-                if(game.veto_count==5){
-                    game.game_state=4;
-                    alert("Game over! ");
+    if (data_json.type == "key") {
+        game.join_key = data_json.join_key;
+        startbox.style.display = "none";
+        init_waiting_room();
+    } else if (data_json.join_key == game.join_key) {
+        switch (data_json.type) {
+            case "alert":
+                alert(data_json.message);
+                send_message(data_json.message);
+                break;
+            case "rejoin":
+                rejoin_manager(data_json);
+                start_scene.style.display = "none";
+                waitingbox.style.display = "none";
+                game.missions = MISSION_LIST[game.player_list.length];
+                init_player_state();
+                init_game_scene();
+                update_game();
+                send_message("rejoin");
+                break;
+            case "players":
+                game.player_list = data_json.player_list;
+                update_waiting_player_list();
+                break;
+            case "ready_list":
+                data_json.ready_list.forEach(element => {
+                    game.player_ready_state[element] = true;
+                });
+                update_waiting_player_list();
+                break;
+            case "game_start":
+                send_message("Game start !", "System");
+                send_message("I am the leader !", data_json.team_leader);
+                waitingbox.style.display = "none";
+                game.player_list = data_json.player_list;
+                game.player_role = data_json.player_role;
+                game.play_turn = data_json.play_turn;
+                game.team_leader = data_json.team_leader;
+                game.game_state = data_json.game_state;
+                game.missions = MISSION_LIST[game.player_list.length];
+                send_message("The mission needs " + game.missions[game.play_turn - 1] + " to finish !", "System");
+                init_player_state();
+                init_game_scene();
+                update_game();
+                break;
+            case "pre_team":
+                game.game_state = 1;
+                send_message("Do you agree the team ?", game.team_leader);
+                game.preteam = data_json.team_members;
+                update_game();
+                break;
+            case "vote_count":
+                send_message(data_json.count + " has voted.", "System");
+                update_game();
+                break;
+            case "vote_result":
+                if (game.game_state == 2) {
+                    deal_vote_mission(data_json.yes, data_json.no);
+                } else {
+                    deal_vote_team(data_json.yes, data_json.no);
                 }
-            } else if (data_json.reason == 1) {
-                send_message("It's turn "+game.play_turn+" now. I am the new leader !",data_json.team_leader);
-            }
-            game.game_state = 0;
-            update_game();
-            break;
-        case "murder":
-            let prompt = data_json.uid + " is killed ! \n";
-            game.game_state = 4;
-            if (game.player_role[data_json.uid] == 1) {
-                prompt += "He is Merlin. Thus bad guys wins! \n";
-            } else {
-                prompt += "Merlin survived. Thus good guys wins! \n";
-            }
-            game.player_list.forEach(e => {
-                prompt += e + " is " + role_list[game.player_role[e]] + "\n";
-            });
-            prompt += "Thanks for playing";
-            alert(prompt);
-            send_message(prompt,"System");
-            break;
+                voting_finished();
+                update_game();
+                if (game.game_state != 2 && game.game_state != 3)
+                    voting_finished();
+                break;
+            case "assign_leader":
+                game.team_leader = data_json.uid
+                if (data_json.reason == 0) {
+                    game.veto_count++;
+                    send_message("It'still turn " + game.play_turn + ". I am the new leader ! " + (5 - game.fail_count) + " more veto will result in gameover.", game.team_leader);
+                    if (game.veto_count == 5) {
+                        game.game_state = 4;
+                        alert("Game over! ");
+                    }
+                } else if (data_json.reason == 1) {
+                    send_message("It's turn " + game.play_turn + " now. I am the new leader ! ", game.team_leader);
+                }
+                game.game_state = 0;
+                update_game();
+                break;
+            case "murder":
+                let prompt = data_json.uid + " is killed ! \n";
+                game.game_state = 4;
+                if (game.player_role[data_json.uid] == 1) {
+                    prompt += "He is Merlin. Thus bad guys wins! \n";
+                } else {
+                    prompt += "Merlin survived. Thus good guys wins! \n";
+                }
+                game.player_list.forEach(e => {
+                    prompt += e + " is " + role_list[game.player_role[e]] + "----||----\n";
+                });
+                prompt += "Thanks for playing";
+                alert(prompt);
+                send_message(prompt, "System");
+                break;
+        }
     }
+
 }
+
+function rejoin_manager(data_json){
+    game.player_role=data_json.player_role;
+    game.play_turn=data_json.play_turn;
+    game.team_leader=data_json.team_leader;
+    game.player_list=data_json.player_list;
+    game.game_state=data_json.game_state;
+    game.veto_count=data_json.veto;
+    game.fail_count=data_json.fail;
+    game.success_count=data_json.success;
+    game.team=data_json.team;
+    game.preteam=data_json.pre_team;
+}
+
 
 function init_waiting_room() {
     waitingbox.style.display = "block";
@@ -390,16 +420,16 @@ function init_waiting_room() {
 }
 function init_game_scene() {
     gamescene.style.display = "block";
-    // game_key_label.textContent = "key: " + game.join_key;
+    game_key_label.textContent = "key: " + game.join_key;
     game_uid_label.textContent = "player: " + player_name;
     init_gaming_player_list();
     update_game_state_label();
     init_mission_label();
 }
-function init_mission_label(){
+function init_mission_label() {
     for (let index = 1; index <= 5; index++) {
         let mission_label = document.querySelector('#mission_label_' + index);
-        mission_label.textContent=" "+game.missions[index-1];
+        mission_label.textContent = " " + game.missions[index - 1];
     }
 }
 
@@ -415,13 +445,20 @@ function random_name() {
         second[Math.floor(Math.random() * second.length)] + Math.floor(Math.random() * 100);
 }
 
-function send_message(message,authur=""){
+function send_message(message, authur = "") {
     let member_item = document.createElement("li");
     const listText = document.createElement('label');
-    listText.textContent = "\<em\>"+authur+"\<\/em\> : "+message;
-    listText.innerHTML=listText.textContent;
+    if (authur == "System") {
+        console.log("system");
+        listText.setAttribute("class", "system");
+        listText.textContent = "<em>" + authur + "</em> : " + message;
+    } else {
+        listText.textContent = "\<em\>" + authur + "\<\/em\> : " + message;
+    }
+
+    listText.innerHTML = listText.textContent;
     member_item.appendChild(listText);
-    game_message_list.insertBefore(member_item,game_message_list.firstChild);
+    game_message_list.insertBefore(member_item, game_message_list.firstChild);
 }
 
 function update_waiting_player_list() {
@@ -503,7 +540,7 @@ function update_game_state_label() {
             }
             break;
         case 3:// assasin
-            if (game.assasin==player_name) {
+            if (game.assasin == player_name) {
                 game_state_label.textContent = "Your last chance! Kill Merlin !";
             } else {
                 game_state_label.textContent = "Pray... ";
@@ -596,7 +633,7 @@ function update_game() {
                     game.assasin = e;
                 }
             });
-            send_message("I will turn the table! ",game.assasin);
+            send_message("I will turn the table! ", game.assasin);
             if (game.player_role[player_name] == 5) {
                 assasin_mode();
             }
@@ -643,9 +680,9 @@ function deal_vote_team(yes, no) {
         game.game_state = 2;
         game.team = game.preteam;
         game.preteam = [];
-        send_message(yes+" yes vs "+no+" no. Resolution passed!","System");
+        send_message(yes + " yes vs " + no + " no. Resolution passed!", "System");
     } else {
-        send_message(yes+" yes vs "+no+" no. Reselect a team!","System");
+        send_message(yes + " yes vs " + no + " no. Reselect a team!", "System");
     }
 }
 function deal_vote_mission(yes, no) {
@@ -654,7 +691,7 @@ function deal_vote_mission(yes, no) {
         game.success_count++;
         let mission_label = document.querySelector('#mission_label_' + game.play_turn);
         mission_label.setAttribute("class", "successful_task");
-        send_message(yes+" yes vs "+no+" no. Mission conpleted!","System");
+        send_message(yes + " yes vs " + no + " no. Mission conpleted!", "System");
         if (game.success_count == 3) {
             game.game_state = 3;
             return;
@@ -663,10 +700,17 @@ function deal_vote_mission(yes, no) {
         game.fail_count++;
         let mission_label = document.querySelector('#mission_label_' + game.play_turn);
         mission_label.setAttribute("class", "failed_task");
-        send_message(yes+" yes vs "+no+" no. Wasted!","System");
+        send_message(yes + " yes vs " + no + " no. Wasted!", "System");
         if (game.fail_count == 3) {
             game.game_state = 4;
             alert("fail 3 gg");
+            let prompt = " Fail 3, GG ! \n";
+            game.player_list.forEach(e => {
+                prompt += e + " is " + role_list[game.player_role[e]] + "----||----\n";
+            });
+            prompt += "Thanks for playing";
+            alert(prompt);
+            send_message(prompt, "System");
         }
     }
     game.play_turn++;
